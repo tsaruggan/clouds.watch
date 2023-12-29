@@ -4,93 +4,116 @@ var drawing = [];
 var currentPath = [];
 var isDrawing = false;
 
+var CANVAS_WIDTH;
+var CANVAS_HEIGHT;
+var BACKGROUND_COLOR;
+var X_DRAWING_NOISE;
+var Y_DRAWING_NOISE;
+var CLOUD_DRAWING_COLOR;
+var CLOUD_DRAWING_STROKE_WEIGHT;
+var X_JITTER;
+var Y_JITTER;
+var AGE;
+var MAX_AGE;
+
 function setup() {
-  canvas = createCanvas(600, 400);
+    AGE = 3;
+    MAX_AGE = 3;
+    CANVAS_WIDTH = 600;
+    CANVAS_HEIGHT = 400;
+    BACKGROUND_COLOR = color(50,180,250);
+    X_DRAWING_NOISE = 20;
+    Y_DRAWING_NOISE = 10;
+    CLOUD_DRAWING_COLOR = color(255, 255, 255, 255 * map(AGE, 0, MAX_AGE, 0.95, 0.50, true));
+    CLOUD_DRAWING_STROKE_WEIGHT = map(AGE, 0, MAX_AGE, 50, 75, true);
+    X_JITTER = map(AGE, 0, MAX_AGE, 0.05, 0.5, true);
+    Y_JITTER = X_JITTER / 2;
+    
+    canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  canvas.mousePressed(startPath);
-  canvas.parent('canvascontainer');
-  canvas.mouseReleased(endPath);
+    canvas.mousePressed(startPath);
+    canvas.parent('canvascontainer');
+    canvas.mouseReleased(endPath);
 
-  var saveButton = select('#saveButton');
-  saveButton.mousePressed(saveDrawing);
+    var saveButton = select('#saveButton');
+    saveButton.mousePressed(saveDrawing);
 
-  var clearButton = select('#clearButton');
-  clearButton.mousePressed(clearDrawing);
+    var clearButton = select('#clearButton');
+    clearButton.mousePressed(clearDrawing);
 
-  var config = {
-    apiKey: '%FIREBASE_API_KEY%',
-    authDomain: "clouds-watch.firebaseapp.com",
-    projectId: "clouds-watch",
-    databaseURL: 'https://clouds-watch-default-rtdb.firebaseio.com/',
-    storageBucket: "clouds-watch.appspot.com",
-    messagingSenderId: "613527026195",
-    appId: "1:613527026195:web:918ec1d042432cc6bb9de6"
-  };
-  firebase.initializeApp(config);
-  database = firebase.database();
+    var config = {
+        apiKey: '%FIREBASE_API_KEY%',
+        authDomain: "clouds-watch.firebaseapp.com",
+        projectId: "clouds-watch",
+        databaseURL: 'https://clouds-watch-default-rtdb.firebaseio.com/',
+        storageBucket: "clouds-watch.appspot.com",
+        messagingSenderId: "613527026195",
+        appId: "1:613527026195:web:918ec1d042432cc6bb9de6"
+    };
 
-  var params = getURLParams();
-  console.log(params);
-  if (params.id) {
-    console.log(params.id);
+    firebase.initializeApp(config);
+    database = firebase.database();
+
+    var params = getURLParams();
+    if (params.id) {
     showDrawing(params.id);
-  }
+    }
 
-  var ref = database.ref('drawings');
-  ref.on('value', gotData, errData);
+    var ref = database.ref('drawings');
+    ref.on('value', gotData, errData);
 }
 
 function startPath() {
-  isDrawing = true;
-  currentPath = [];
-  drawing.push(currentPath);
+    isDrawing = true;
+    currentPath = [];
+    drawing.push(currentPath);
 }
 
 function endPath() {
-  isDrawing = false;
+    isDrawing = false;  
 }
 
 function draw() {
-    background(50,180,250);
+    background(BACKGROUND_COLOR);
 
-  if (isDrawing) {
-    let xNoise = random(-20, 20);
-    let yNoise = random(-10, 10);
-    var point = {
-      x: mouseX + xNoise,
-      y: mouseY + yNoise
-    };
-    currentPath.push(point);
-  }
-
-  stroke(255, 255, 255, 255*0.95);
-  strokeWeight(50);
-  strokeJoin(ROUND);
-  noFill();
-  for (var i = 0; i < drawing.length; i++) {
-    var path = drawing[i];
-    beginShape();
-    for (var j = 0; j < path.length; j++) {
-    let xNoise = random(-0.8, 0.8);
-    let yNoise = random(-0.5, 0.5);
-      vertex(path[j].x + xNoise, path[j].y + yNoise);
+    if (isDrawing) {
+        var point = {
+            x: mouseX + random(-1 * X_DRAWING_NOISE, X_DRAWING_NOISE),
+            y: mouseY + random(-1 * Y_DRAWING_NOISE, Y_DRAWING_NOISE)
+        };
+        currentPath.push(point);
     }
-    endShape();
-  }
+
+    stroke(CLOUD_DRAWING_COLOR);
+    strokeWeight(CLOUD_DRAWING_STROKE_WEIGHT);
+    strokeJoin(ROUND);
+    noFill();
+    for (var i = 0; i < drawing.length; i++) {
+        var path = drawing[i];
+        beginShape();
+        for (var j = 0; j < path.length; j++) {
+            let xJitter = randomGaussian(0, X_JITTER);
+            let yJitter = randomGaussian(0, Y_JITTER);
+            path[j].x  =  path[j].x + xJitter
+            path[j].y  =  path[j].y + yJitter
+            vertex(path[j].x, path[j].y);
+        }
+        endShape();
+    }
 }
 
 function saveDrawing() {
-  var ref = database.ref('drawings');
-  var data = {
-    name: 'Dan',
-    drawing: drawing
-  };
-  var result = ref.push(data, dataSent);
-  console.log(result.key);
+    var ref = database.ref('drawings');
+    var data = {
+        name: 'Dan',
+        drawing: drawing
+    };
+    var result = ref.push(data, dataSent);
+    console.log(result.key);
 
-  function dataSent(err, status) {
-    console.log(status);
-  }
+    function dataSent(err, status) {
+        console.log(status);
+    }
 }
 
 function gotData(data) {
@@ -120,25 +143,25 @@ function gotData(data) {
 }
 
 function errData(err) {
-  console.log(err);
+    console.log(err);
 }
 
 function showDrawing(key) {
-  //console.log(arguments);
-  if (key instanceof MouseEvent) {
-    key = this.html();
-  }
+    //console.log(arguments);
+    if (key instanceof MouseEvent) {
+        key = this.html();
+    }
 
-  var ref = database.ref('drawings/' + key);
-  ref.once('value', oneDrawing, errData);
+    var ref = database.ref('drawings/' + key);
+    ref.once('value', oneDrawing, errData);
 
-  function oneDrawing(data) {
-    var dbdrawing = data.val();
-    drawing = dbdrawing.drawing;
+    function oneDrawing(data) {
+        var dbdrawing = data.val();
+        drawing = dbdrawing.drawing;
     //console.log(drawing);
-  }
+    }
 }
 
 function clearDrawing() {
-  drawing = [];
+    drawing = [];
 }
