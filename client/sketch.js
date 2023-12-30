@@ -1,9 +1,9 @@
 var database;
 
 var drawing = [];
-var currentPath = [];
-var isDrawing = false;
 
+var AGE;
+var MAX_AGE;
 var CANVAS_WIDTH;
 var CANVAS_HEIGHT;
 var BACKGROUND_COLOR;
@@ -13,11 +13,10 @@ var CLOUD_DRAWING_COLOR;
 var CLOUD_DRAWING_STROKE_WEIGHT;
 var X_JITTER;
 var Y_JITTER;
-var AGE;
-var MAX_AGE;
+var clouds;
 
 function setup() {
-    AGE = 3;
+    AGE = 0;
     MAX_AGE = 3;
     CANVAS_WIDTH = 600;
     CANVAS_HEIGHT = 400;
@@ -30,16 +29,7 @@ function setup() {
     Y_JITTER = X_JITTER / 2;
     
     canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-
-    canvas.mousePressed(startPath);
     canvas.parent('canvascontainer');
-    canvas.mouseReleased(endPath);
-
-    var saveButton = select('#saveButton');
-    saveButton.mousePressed(saveDrawing);
-
-    var clearButton = select('#clearButton');
-    clearButton.mousePressed(clearDrawing);
 
     var config = {
         apiKey: '%FIREBASE_API_KEY%',
@@ -59,35 +49,27 @@ function setup() {
     showDrawing(params.id);
     }
 
-    var ref = database.ref('drawings');
-    ref.on('value', gotData, errData);
-}
-
-function startPath() {
-    isDrawing = true;
-    currentPath = [];
-    drawing.push(currentPath);
-}
-
-function endPath() {
-    isDrawing = false;  
+    var ref = database.ref('clouds');
+    ref.on('value', (data) => {
+        const firebaseData = data.val();
+        clouds = Object.keys(firebaseData).map(key => {
+            const cloud = firebaseData[key];
+            return {name: cloud.name, drawing: cloud.drawing} 
+        });
+        drawing = clouds[0].drawing;
+    }, (err) => {
+        console.log(err);
+    }); 
 }
 
 function draw() {
     background(BACKGROUND_COLOR);
 
-    if (isDrawing) {
-        var point = {
-            x: mouseX + random(-1 * X_DRAWING_NOISE, X_DRAWING_NOISE),
-            y: mouseY + random(-1 * Y_DRAWING_NOISE, Y_DRAWING_NOISE)
-        };
-        currentPath.push(point);
-    }
-
     stroke(CLOUD_DRAWING_COLOR);
     strokeWeight(CLOUD_DRAWING_STROKE_WEIGHT);
     strokeJoin(ROUND);
     noFill();
+
     for (var i = 0; i < drawing.length; i++) {
         var path = drawing[i];
         beginShape();
@@ -100,68 +82,4 @@ function draw() {
         }
         endShape();
     }
-}
-
-function saveDrawing() {
-    var ref = database.ref('drawings');
-    var data = {
-        name: 'Dan',
-        drawing: drawing
-    };
-    var result = ref.push(data, dataSent);
-    console.log(result.key);
-
-    function dataSent(err, status) {
-        console.log(status);
-    }
-}
-
-function gotData(data) {
-  // clear the listing
-  var elts = selectAll('.listing');
-  for (var i = 0; i < elts.length; i++) {
-    elts[i].remove();
-  }
-
-  var drawings = data.val();
-  var keys = Object.keys(drawings);
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    //console.log(key);
-    var li = createElement('li', '');
-    li.class('listing');
-    var ahref = createA('#', key);
-    ahref.mousePressed(showDrawing);
-    ahref.parent(li);
-
-    var perma = createA('?id=' + key, 'permalink');
-    perma.parent(li);
-    perma.style('padding', '4px');
-
-    li.parent('drawinglist');
-  }
-}
-
-function errData(err) {
-    console.log(err);
-}
-
-function showDrawing(key) {
-    //console.log(arguments);
-    if (key instanceof MouseEvent) {
-        key = this.html();
-    }
-
-    var ref = database.ref('drawings/' + key);
-    ref.once('value', oneDrawing, errData);
-
-    function oneDrawing(data) {
-        var dbdrawing = data.val();
-        drawing = dbdrawing.drawing;
-    //console.log(drawing);
-    }
-}
-
-function clearDrawing() {
-    drawing = [];
 }
