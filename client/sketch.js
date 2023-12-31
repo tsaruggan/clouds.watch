@@ -14,12 +14,14 @@ var CLOUD_DRAWING_STROKE_WEIGHT;
 var X_JITTER;
 var Y_JITTER;
 var clouds;
+var v_x = 0.5;
+var v_y = 0;
 
 function setup() {
-    AGE = 0;
+    AGE = 0.5;
     MAX_AGE = 3;
-    CANVAS_WIDTH = 600;
-    CANVAS_HEIGHT = 400;
+    CANVAS_WIDTH = windowWidth;
+    CANVAS_HEIGHT = windowHeight;
     BACKGROUND_COLOR = color(50,180,250);
     X_DRAWING_NOISE = 20;
     Y_DRAWING_NOISE = 10;
@@ -64,22 +66,31 @@ function setup() {
 
 function draw() {
     background(BACKGROUND_COLOR);
+    drawCloud(drawing, 1, 0.1)
+}
 
+function drawCloud(cloudDrawing, v_x, v_y) {
     stroke(CLOUD_DRAWING_COLOR);
     strokeWeight(CLOUD_DRAWING_STROKE_WEIGHT);
     strokeJoin(ROUND);
     noFill();
-
-    for (var i = 0; i < drawing.length; i++) {
-        var path = drawing[i];
+    for (var i = 0; i < cloudDrawing.length; i++) {
+        var path = cloudDrawing[i];
+        push()
         beginShape();
+        translate(-300, 100)
         for (var j = 0; j < path.length; j++) {
             let xJitter = randomGaussian(0, X_JITTER);
             let yJitter = randomGaussian(0, Y_JITTER);
-            path[j].x  =  path[j].x + xJitter
-            path[j].y  =  path[j].y + yJitter
+            path[j].x  =  path[j].x + xJitter + v_x
+            path[j].y  =  path[j].y + yJitter + v_y
             vertex(path[j].x, path[j].y);
         }
         endShape();
+        pop()
     }
 }
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+ }

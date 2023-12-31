@@ -17,7 +17,7 @@ var X_JITTER;
 var Y_JITTER;
 
 function setup() {
-    AGE = 3;
+    AGE = 0;
     MAX_AGE = 3;
     CANVAS_WIDTH = 600;
     CANVAS_HEIGHT = 400;
@@ -100,6 +100,36 @@ function draw() {
         }
         endShape();
     }
+
+    drawBoundingBox();
+}
+
+function drawBoundingBox() {
+    if (drawing.length === 0) {
+        return;
+    }
+
+
+    let minX = width;
+    let minY = height;
+    let maxX = 0;
+    let maxY = 0;
+
+    for (let path of drawing) {
+        for (let point of path) {
+            let x = point.x;
+            let y = point.y;
+            minX = min(minX, x);
+            minY = min(minY, y);
+            maxX = max(maxX, x);
+            maxY = max(maxY, y);
+        }
+    }
+    noFill();
+    stroke(255, 0, 0);
+    strokeWeight(1);
+    let cloudStrokeRadius = CLOUD_DRAWING_STROKE_WEIGHT / 2;
+    rect(minX - cloudStrokeRadius, minY - cloudStrokeRadius, maxX - minX + 2 * cloudStrokeRadius, maxY - minY + 2 * cloudStrokeRadius);
 }
 
 function saveDrawing() {
