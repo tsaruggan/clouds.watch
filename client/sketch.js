@@ -1,6 +1,6 @@
 var database;
 
-var drawing = [];
+var cloud;
 
 var AGE;
 var MAX_AGE;
@@ -18,7 +18,7 @@ var v_x = 0.5;
 var v_y = 0;
 
 function setup() {
-    AGE = 0.5;
+    AGE = 2;
     MAX_AGE = 3;
     CANVAS_WIDTH = windowWidth;
     CANVAS_HEIGHT = windowHeight;
@@ -56,10 +56,11 @@ function setup() {
         const firebaseData = data.val();
         clouds = Object.keys(firebaseData).map(key => {
             const cloud = firebaseData[key];
-            return {name: cloud.name, drawing: cloud.drawing} 
+            return {name: cloud.name, drawing: cloud.drawing, boundingBox: cloud.boundingBox} 
         });
         console.log(clouds[0]);
-        drawing = clouds[0].drawing;
+        // drawing = clouds[0].drawing;
+        cloud = clouds[0];
     }, (err) => {
         console.log(err);
     }); 
@@ -67,19 +68,23 @@ function setup() {
 
 function draw() {
     background(BACKGROUND_COLOR);
-    drawCloud(drawing, 1, 0.1)
+    drawCloud(cloud, v_x, v_y)
 }
 
-function drawCloud(cloudDrawing, v_x, v_y) {
+function drawCloud(cloud, v_x, v_y) {
+    if (cloud == undefined) {
+        return;
+    }
+
     stroke(CLOUD_DRAWING_COLOR);
     strokeWeight(CLOUD_DRAWING_STROKE_WEIGHT);
     strokeJoin(ROUND);
     noFill();
-    for (var i = 0; i < cloudDrawing.length; i++) {
-        var path = cloudDrawing[i];
+    for (var i = 0; i < cloud.drawing.length; i++) {
+        var path = cloud.drawing[i];
         push()
         beginShape();
-        translate(-300, 100)
+        translate(-1 * cloud.boundingBox.width, height/2 - cloud.boundingBox.height/2);
         for (var j = 0; j < path.length; j++) {
             let xJitter = randomGaussian(0, X_JITTER);
             let yJitter = randomGaussian(0, Y_JITTER);

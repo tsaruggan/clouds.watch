@@ -17,7 +17,7 @@ var X_JITTER;
 var Y_JITTER;
 
 function setup() {
-    AGE = 0;
+    AGE = 0.5;
     MAX_AGE = 3;
     CANVAS_WIDTH = 600;
     CANVAS_HEIGHT = 400;
