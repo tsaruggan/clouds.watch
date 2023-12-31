@@ -1,6 +1,6 @@
 var database;
 
-var cloud;
+var clouds;
 
 var AGE;
 var MAX_AGE;
@@ -14,11 +14,9 @@ var CLOUD_DRAWING_STROKE_WEIGHT;
 var X_JITTER;
 var Y_JITTER;
 var clouds;
-var v_x = 0.5;
-var v_y = 0;
 
 function setup() {
-    AGE = 2;
+    AGE = 0;
     MAX_AGE = 3;
     CANVAS_WIDTH = windowWidth;
     CANVAS_HEIGHT = windowHeight;
@@ -56,11 +54,13 @@ function setup() {
         const firebaseData = data.val();
         clouds = Object.keys(firebaseData).map(key => {
             const cloud = firebaseData[key];
-            return {name: cloud.name, drawing: cloud.drawing, boundingBox: cloud.boundingBox} 
+            const position = {x: random(width), y: random(height)}
+            return {name: cloud.name, drawing: cloud.drawing, boundingBox: cloud.boundingBox, position: position, speed: random(1, 2)} 
         });
-        console.log(clouds[0]);
+        console.log(clouds);
+        // console.log(clouds[0]);
         // drawing = clouds[0].drawing;
-        cloud = clouds[0];
+        // cloud = clouds[0];
     }, (err) => {
         console.log(err);
     }); 
@@ -68,10 +68,14 @@ function setup() {
 
 function draw() {
     background(BACKGROUND_COLOR);
-    drawCloud(cloud, v_x, v_y)
+    if (clouds !== undefined) {
+        for (let cloud of clouds) {
+            drawCloud(cloud)
+        }
+    }
 }
 
-function drawCloud(cloud, v_x, v_y) {
+function drawCloud(cloud) {
     if (cloud == undefined) {
         return;
     }
@@ -80,20 +84,31 @@ function drawCloud(cloud, v_x, v_y) {
     strokeWeight(CLOUD_DRAWING_STROKE_WEIGHT);
     strokeJoin(ROUND);
     noFill();
+
+    // let initialX = -1 * cloud.boundingBox.width;
+    // let initialY = height/2 - cloud.boundingBox.height/2;
+
     for (var i = 0; i < cloud.drawing.length; i++) {
         var path = cloud.drawing[i];
         push()
         beginShape();
-        translate(-1 * cloud.boundingBox.width, height/2 - cloud.boundingBox.height/2);
+        translate(cloud.position.x, cloud.position.y);
         for (var j = 0; j < path.length; j++) {
             let xJitter = randomGaussian(0, X_JITTER);
             let yJitter = randomGaussian(0, Y_JITTER);
-            path[j].x  =  path[j].x + xJitter + v_x
-            path[j].y  =  path[j].y + yJitter + v_y
+            path[j].x  =  path[j].x + xJitter
+            path[j].y  =  path[j].y + yJitter
             vertex(path[j].x, path[j].y);
         }
         endShape();
         pop()
+    }
+
+    cloud.position.x = cloud.position.x + cloud.speed;
+    if (cloud.position.x > width + CLOUD_DRAWING_STROKE_WEIGHT/2) {
+        cloud.position.x = -1 * cloud.boundingBox.width - CLOUD_DRAWING_STROKE_WEIGHT/2;
+        cloud.position.y = random(height);
+        cloud.speed = random(1, 2);
     }
 }
 
