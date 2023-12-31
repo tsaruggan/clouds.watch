@@ -58,6 +58,7 @@ function setup() {
             const cloud = firebaseData[key];
             return {name: cloud.name, drawing: cloud.drawing} 
         });
+        console.log(clouds[0]);
         drawing = clouds[0].drawing;
     }, (err) => {
         console.log(err);

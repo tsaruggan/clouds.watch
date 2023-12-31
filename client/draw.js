@@ -53,14 +53,6 @@ function setup() {
 
     firebase.initializeApp(config);
     database = firebase.database();
-
-    var params = getURLParams();
-    if (params.id) {
-    showDrawing(params.id);
-    }
-
-    var ref = database.ref('clouds');
-    ref.on('value', gotData, errData);
 }
 
 function startPath() {
@@ -109,7 +101,6 @@ function drawBoundingBox() {
         return;
     }
 
-
     let minX = width;
     let minY = height;
     let maxX = 0;
@@ -128,68 +119,56 @@ function drawBoundingBox() {
     noFill();
     stroke(255, 0, 0);
     strokeWeight(1);
-    let cloudStrokeRadius = CLOUD_DRAWING_STROKE_WEIGHT / 2;
-    rect(minX - cloudStrokeRadius, minY - cloudStrokeRadius, maxX - minX + 2 * cloudStrokeRadius, maxY - minY + 2 * cloudStrokeRadius);
+ 
+    let boxWidth = maxX - minX;
+    let boxHeight = maxY - minY;
+    rect(minX - CLOUD_DRAWING_STROKE_WEIGHT/2, 
+        minY - CLOUD_DRAWING_STROKE_WEIGHT/2, 
+        boxWidth + CLOUD_DRAWING_STROKE_WEIGHT, 
+        boxHeight + CLOUD_DRAWING_STROKE_WEIGHT);
 }
 
 function saveDrawing() {
-    var ref = database.ref('clouds');
+    let minX = width;
+    let minY = height;
+    let maxX = 0;
+    let maxY = 0;
+    for (var i = 0; i < drawing.length; i++) {
+        let path = drawing[i];
+        for (var j = 0; j < path.length; j++) {
+            let point = path[j];
+            let x = point.x;
+            let y = point.y;
+            minX = min(minX, x);
+            minY = min(minY, y);
+            maxX = max(maxX, x);
+            maxY = max(maxY, y);
+        }
+    }
+    let boxWidth = maxX - minX;
+    let boxHeight = maxY - minY;
+
+    let drawingCopy = _.cloneDeep(drawing);
+    for (var i = 0; i < drawingCopy.length; i++) {
+        var path = drawingCopy[i];
+        for (var j = 0; j < path.length; j++) {
+            let point = path[j];
+            let x = point.x;
+            let y = point.y;
+            path[j].x  =  x - minX;
+            path[j].y  =  y - minY;
+        }
+    }
+    
     var data = {
-        name: 'Dan',
-        drawing: drawing
+        name: "Saru",
+        drawing: drawingCopy,
+        boundingBox: {width: boxWidth, height: boxHeight}
     };
-    var result = ref.push(data, dataSent);
-    console.log(result.key);
+    console.log(data);
 
-    function dataSent(err, status) {
-        console.log(status);
-    }
-}
-
-function gotData(data) {
-  // clear the listing
-  var elts = selectAll('.listing');
-  for (var i = 0; i < elts.length; i++) {
-    elts[i].remove();
-  }
-
-  var clouds = data.val();
-  var keys = Object.keys(clouds);
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    //console.log(key);
-    var li = createElement('li', '');
-    li.class('listing');
-    var ahref = createA('#', key);
-    ahref.mousePressed(showDrawing);
-    ahref.parent(li);
-
-    var perma = createA('?id=' + key, 'permalink');
-    perma.parent(li);
-    perma.style('padding', '4px');
-
-    li.parent('drawinglist');
-  }
-}
-
-function errData(err) {
-    console.log(err);
-}
-
-function showDrawing(key) {
-    //console.log(arguments);
-    if (key instanceof MouseEvent) {
-        key = this.html();
-    }
-
-    var ref = database.ref('clouds/' + key);
-    ref.once('value', oneDrawing, errData);
-
-    function oneDrawing(data) {
-        var cloud = data.val();
-        drawing = cloud.drawing;
-    //console.log(drawing);
-    }
+    var ref = database.ref('clouds');
+    ref.push(data);
 }
 
 function clearDrawing() {
