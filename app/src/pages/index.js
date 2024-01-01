@@ -6,8 +6,7 @@ import dynamic from 'next/dynamic'
 
 import React, { useState, useEffect } from 'react';
 
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue } from 'firebase/database';
+import { getData } from '@/utils/firebase';
  
 const Sky = dynamic(() => import('../components/Sky'), {
   loading: () => <p>loading...</p>,
@@ -18,33 +17,9 @@ export default function Home() {
   const [clouds, setClouds] = useState([]);
 
   useEffect(() => {
-    var config = {
-      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-      authDomain: "clouds-watch.firebaseapp.com",
-      projectId: "clouds-watch",
-      databaseURL: 'https://clouds-watch-default-rtdb.firebaseio.com/',
-      storageBucket: "clouds-watch.appspot.com",
-      messagingSenderId: "613527026195",
-      appId: "1:613527026195:web:918ec1d042432cc6bb9de6"
-    };
-    const app = initializeApp(config);
-    const db = getDatabase(app);
-    const cloudsRef = ref(db, 'clouds');
-    onValue(cloudsRef, (data) => {
-      const firebaseData = data.val();
-      const cloudsData = Object.keys(firebaseData).map(key => {
-        const cloud = firebaseData[key];
-        return {
-          name: cloud.name, 
-          drawing: cloud.drawing, 
-          boundingBox: cloud.boundingBox, 
-        } 
-      });
-      setClouds(cloudsData);
-    }, (err) => {
-      console.log(err);
-    }); 
-
+    getData((data) => {
+      setClouds(data);
+    });
   }, []);
 
   return (
