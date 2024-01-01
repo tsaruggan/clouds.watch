@@ -1,4 +1,6 @@
 export default function sketch(p5) {
+    let clouds = [];
+
     function setup() {
         p5.createCanvas(p5.windowWidth, p5.windowHeight);
     }
@@ -11,7 +13,15 @@ export default function sketch(p5) {
         p5.background(50,180,250);
     }
 
+    function updateWithProps(props) {
+        if (props.clouds) {
+            clouds = props.clouds;
+            console.log(props);
+        }
+    }
+
     p5.setup = setup;
     p5.windowResized = windowResized;
     p5.draw = draw;
+    p5.updateWithProps = updateWithProps;
 }
