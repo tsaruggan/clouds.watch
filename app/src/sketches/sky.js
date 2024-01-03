@@ -1,24 +1,9 @@
 export default function sketch(p5) {
     var clouds = [];
-
-    var AGE;
-    var MAX_AGE;
-    var BACKGROUND_COLOR;
-    var CLOUD_DRAWING_COLOR;
-    var CLOUD_DRAWING_STROKE_WEIGHT;
-    var X_JITTER;
-    var Y_JITTER;
+    var visibleClouds = []; 
 
     function setup() {
         p5.createCanvas(p5.windowWidth, p5.windowHeight);
-
-        AGE = 0;
-        MAX_AGE = 3;
-        BACKGROUND_COLOR = p5.color(50,180,250);
-        CLOUD_DRAWING_COLOR = p5.color(255, 255, 255, 255 * p5.map(AGE, 0, MAX_AGE, 0.95, 0.50, true));
-        CLOUD_DRAWING_STROKE_WEIGHT = p5.map(AGE, 0, MAX_AGE, 50, 75, true);
-        X_JITTER = p5.map(AGE, 0, MAX_AGE, 0.05, 0.5, true);
-        Y_JITTER = X_JITTER / 2;
     }
 
     function windowResized() {
@@ -26,11 +11,15 @@ export default function sketch(p5) {
     }
 
     function draw() {
-        p5.background(BACKGROUND_COLOR);
-        if (clouds !== undefined) {
-            for (let cloud of clouds) {
-                drawCloud(cloud)
-            }
+        p5.background(50,180,250);
+        drawClouds();
+        updateCloudPositions();
+        updateVisibleClouds();
+    }
+
+    function drawClouds() {
+        for (let cloud of visibleClouds) {
+            drawCloud(cloud);
         }
     }
 
@@ -39,8 +28,9 @@ export default function sketch(p5) {
             return;
         }
     
-        p5.stroke(CLOUD_DRAWING_COLOR);
-        p5.strokeWeight(CLOUD_DRAWING_STROKE_WEIGHT);
+        let strokeWeight = getCloudDrawingStrokeWeight(cloud.age);
+        p5.stroke(getCloudDrawingColor(cloud.age));
+        p5.strokeWeight(strokeWeight);
         p5.strokeJoin(p5.ROUND);
         p5.noFill();
     
@@ -50,22 +40,77 @@ export default function sketch(p5) {
             p5.beginShape();
             p5.translate(cloud.position.x, cloud.position.y);
             for (var j = 0; j < path.length; j++) {
-                let xJitter = p5.randomGaussian(0, X_JITTER);
-                let yJitter = p5.randomGaussian(0, Y_JITTER);
-                path[j].x  =  path[j].x + xJitter
-                path[j].y  =  path[j].y + yJitter
-                p5.vertex(path[j].x, path[j].y);
+                let jitter = getJitter(cloud.age);
+                path[j].x  =  path[j].x + jitter
+                path[j].y  =  path[j].y + jitter/2;
+                p5.vertex(path[j].x + jitter, path[j].y);
             }
             p5.endShape();
             p5.pop()
         }
-    
-        cloud.position.x = cloud.position.x + cloud.speed;
-        if (cloud.position.x > p5.width + CLOUD_DRAWING_STROKE_WEIGHT/2) {
-            cloud.position.x = -1 * cloud.boundingBox.width - CLOUD_DRAWING_STROKE_WEIGHT/2;
-            cloud.position.y = p5.random(p5.height);
-            cloud.speed = p5.random(1, 2);
+
+        p5.push();
+        p5.translate(cloud.position.x, cloud.position.y);
+        p5.fill(255);
+        p5.stroke(0);
+        p5.strokeWeight(10);
+        p5.textSize(14);
+        p5.text(cloud.name, cloud.boundingBox.width+strokeWeight/2 -p5.textWidth(cloud.name) - 5, cloud.boundingBox.height+strokeWeight/2 + 5);
+        p5.pop();
+    }
+
+    function updateCloudPositions() {
+        for (let i = 0; i < visibleClouds.length; i++) {
+            let strokeWeight = getCloudDrawingStrokeWeight(visibleClouds[i].age);
+            visibleClouds[i].position.x = visibleClouds[i].position.x + visibleClouds[i].speed;
+            if (visibleClouds[i].position.x > p5.width + strokeWeight/2) { 
+                visibleClouds[i].position.x = -1 * visibleClouds[i].boundingBox.width - strokeWeight/2 - visibleClouds[i].boundingBox.width*i;
+                visibleClouds[i].position.y = p5.random(0 + strokeWeight/2 + 25, p5.height - visibleClouds[i].boundingBox.height - strokeWeight/2 - 25);
+                visibleClouds[i].speed = p5.random(0.5, 2.5);
+                clouds.unshift(visibleClouds[i]);
+                visibleClouds.splice(i, 1);
+                i--;
+            }
         }
+    }
+
+    function updateVisibleClouds() {
+        while (visibleClouds.length < 3) {
+            if (clouds.length != 0) {
+                visibleClouds.push(clouds.pop());
+            }
+        }
+    }
+
+    function getCloudDrawingColor(age) {
+        return p5.color(255, 255, 255, 255 * p5.map(age, 0, 3, 0.95, 0.50, true));
+    }
+
+    function getCloudDrawingStrokeWeight(age) {
+        return p5.map(age, 0, 3, 50, 75, true);
+    }
+
+    function getJitter(age) {
+        let jitter = p5.map(age, 0, 3, 0.05, 0.5, true);
+        return p5.randomGaussian(0, jitter);
+    }
+
+    function shuffle(array) {
+        let currentIndex = array.length,  randomIndex;
+      
+        // While there remain elements to shuffle.
+        while (currentIndex > 0) {
+      
+          // Pick a remaining element.
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex--;
+      
+          // And swap it with the current element.
+          [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+        }
+      
+        return array;
     }
 
     function updateWithProps(props) {
@@ -73,9 +118,14 @@ export default function sketch(p5) {
             clouds = props.clouds;
 
             for (let i = 0; i < clouds.length; i++) {
-                clouds[i].position = {x: p5.random(p5.width), y: p5.random(p5.height)};
-                clouds[i].speed = p5.random(1, 2);
+                let strokeWeight = getCloudDrawingStrokeWeight(clouds[i].age);
+                clouds[i].position = {
+                    x: -1 * clouds[i].boundingBox.width - strokeWeight/2 - clouds[i].boundingBox.width * i,
+                    y: p5.random(0 + strokeWeight/2 + 25, p5.height - clouds[i].boundingBox.height - strokeWeight/2 - 25)
+                };
+                clouds[i].speed = p5.random(0.5, 2.5);
             }
+            shuffle(clouds);
         }
     }
 
