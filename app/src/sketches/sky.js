@@ -14,10 +14,11 @@ export default function sketch(p5) {
     }
 
     function updateWithProps(props) {
-        if (props.clouds) {
-            clouds = props.clouds;
-            console.log(props);
-        }
+        // if (props.clouds) {
+        //     clouds = props.clouds;
+        //     console.log(props);
+        // }
+        console.log(props);
     }
 
     p5.setup = setup;
