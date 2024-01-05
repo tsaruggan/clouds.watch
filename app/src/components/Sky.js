@@ -9,7 +9,7 @@ import styles from '@/styles/Sky.module.css';
 
 export default function Sky({ clouds }) {
     return (
-        <NextReactP5Wrapper sketch={sketch} clouds={clouds}> 
+        <NextReactP5Wrapper fallback={<h1>loading...</h1>} sketch={sketch} clouds={clouds}> 
             
            <span className={`.${P5WrapperClassName} & ${styles.title}`}>clouds.watch</span>
         </NextReactP5Wrapper> 

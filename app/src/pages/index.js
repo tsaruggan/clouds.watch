@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { initializeApp } from 'firebase/app';
 import { ref, getDatabase } from 'firebase/database';
 import { useListVals } from 'react-firebase-hooks/database';
+import { useEffect, useRef } from 'react';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -20,15 +21,24 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const database = getDatabase(firebaseApp);
- 
-const Sky = dynamic(() => import('../components/Sky'), {
+
+var Sky = dynamic(() => import('../components/Sky'), {
   loading: () => <p>loading...</p>,
   ssr: false,
 });
 
+
 export default function Home() {
 
   const [clouds, loading, error] = useListVals(ref(database, 'clouds'));
+
+  useEffect(() => {
+    Sky = dynamic(() => import('../components/Sky'), {
+      loading: () => <p>loading...</p>,
+      ssr: false,
+    });
+  });
+
 
   return (
     <>
@@ -38,8 +48,8 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {error && <strong>Error: {error}</strong>}
-      {loading && <strong>Loading...</strong>}
+      {error && <strong>error: {error}</strong>}
+      {loading && <strong>loading...</strong>}
       {!loading && clouds && (
         <Sky clouds={clouds} />
       )}

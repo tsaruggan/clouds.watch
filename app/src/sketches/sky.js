@@ -75,7 +75,7 @@ export default function sketch(p5) {
     }
 
     function updateVisibleClouds() {
-        while (visibleClouds.length < 3) {
+        while (visibleClouds.length < 4) {
             if (clouds.length != 0) {
                 visibleClouds.push(clouds.pop());
             }
@@ -134,3 +134,4 @@ export default function sketch(p5) {
     p5.draw = draw;
     p5.updateWithProps = updateWithProps;
 }
+ 
