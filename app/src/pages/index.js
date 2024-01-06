@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { initializeApp } from 'firebase/app';
 import { ref, getDatabase } from 'firebase/database';
 import { useListVals } from 'react-firebase-hooks/database';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -23,7 +23,12 @@ const firebaseApp = initializeApp(firebaseConfig);
 const database = getDatabase(firebaseApp);
 
 var Sky = dynamic(() => import('../components/Sky'), {
-  loading: () => <p>loading...</p>,
+  loading: () => <p>loading sky...</p>,
+  ssr: false,
+});
+
+var Draw = dynamic(() => import('../components/Draw'), {
+  loading: () => <p>loading draw...</p>,
   ssr: false,
 });
 
@@ -31,13 +36,31 @@ var Sky = dynamic(() => import('../components/Sky'), {
 export default function Home() {
 
   const [clouds, loading, error] = useListVals(ref(database, 'clouds'));
+  const [drawVisible, setDrawVisible] = useState(false);
 
   useEffect(() => {
     Sky = dynamic(() => import('../components/Sky'), {
-      loading: () => <p>loading...</p>,
+      loading: () => <p>loading sky...</p>,
+      ssr: false,
+    });
+
+    Draw = dynamic(() => import('../components/Draw'), {
+      loading: () => <p>loading draw...</p>,
       ssr: false,
     });
   });
+
+  const display = () => {
+    if (drawVisible) {
+      return <Draw />
+    } else {
+      return <Sky clouds={clouds} toggleDrawVisible={toggleDrawVisible} />
+    }
+  }
+
+  const toggleDrawVisible = () => {
+    setDrawVisible(!drawVisible);
+  }
 
   return (
     <>
@@ -50,7 +73,7 @@ export default function Home() {
       {error && <strong>error: {error}</strong>}
       {loading && <strong>loading...</strong>}
       {!loading && clouds && (
-        <Sky clouds={clouds} />
+        display()
       )}
     </>
   );

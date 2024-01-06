@@ -7,9 +7,12 @@ import { P5WrapperClassName } from "@p5-wrapper/react";
 import sketch from "../sketches/sky";
 import styles from '@/styles/Sky.module.css';
 
-export default function Sky({ clouds }) {
+export default function Sky({ clouds, toggleDrawVisible }) {
     return (
-        <NextReactP5Wrapper fallback={<h1>loading...</h1>} sketch={sketch} clouds={clouds}> 
+        <NextReactP5Wrapper fallback={<h1>loading sky...</h1>} sketch={sketch} clouds={clouds}> 
+            <div className={`.${P5WrapperClassName} & ${styles.draw}`}>
+                <button className={`.${P5WrapperClassName} & ${styles.button}`} onClick={toggleDrawVisible}>draw a cloud *.+</button>
+            </div>
         </NextReactP5Wrapper> 
     ); 
 } 

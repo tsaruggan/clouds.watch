@@ -15,8 +15,8 @@ export default function sketch(p5) {
 
     function draw() {
         p5.background(50,180,250);
-        drawClouds();
-        updateCloudPositions();
+        // drawClouds();
+        // updateCloudPositions();
         
     }
 
