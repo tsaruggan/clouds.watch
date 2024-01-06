@@ -1,6 +1,9 @@
 export default function sketch(p5) {
     var clouds = [];
-    var visibleClouds = []; 
+    var visibleClouds = [];
+
+    const NUM_VISIBLE = 3;
+    const MAX_AGE = 3;
 
     function setup() {
         p5.createCanvas(p5.windowWidth, p5.windowHeight);
@@ -14,7 +17,7 @@ export default function sketch(p5) {
         p5.background(50,180,250);
         drawClouds();
         updateCloudPositions();
-        updateVisibleClouds();
+        
     }
 
     function drawClouds() {
@@ -28,9 +31,8 @@ export default function sketch(p5) {
             return;
         }
     
-        let strokeWeight = getCloudDrawingStrokeWeight(cloud.age);
-        p5.stroke(getCloudDrawingColor(cloud.age));
-        p5.strokeWeight(strokeWeight);
+        p5.stroke(cloud.color);
+        p5.strokeWeight(cloud.strokeWeight);
         p5.strokeJoin(p5.ROUND);
         p5.noFill();
     
@@ -48,6 +50,7 @@ export default function sketch(p5) {
             p5.endShape();
             p5.pop()
         }
+        
 
         p5.push();
         p5.translate(cloud.position.x, cloud.position.y);
@@ -55,29 +58,23 @@ export default function sketch(p5) {
         p5.stroke(0);
         p5.strokeWeight(10);
         p5.textSize(14);
-        p5.text(cloud.name, cloud.boundingBox.width+strokeWeight/2 -p5.textWidth(cloud.name) - 5, cloud.boundingBox.height+strokeWeight/2 + 5);
+        p5.text(cloud.name,
+                cloud.boundingBox.width+cloud.strokeWeight/2 - p5.textWidth(cloud.name) - 5, 
+                cloud.boundingBox.height+cloud.strokeWeight/2 + 5);
         p5.pop();
     }
 
     function updateCloudPositions() {
         for (let i = 0; i < visibleClouds.length; i++) {
-            let strokeWeight = getCloudDrawingStrokeWeight(visibleClouds[i].age);
             visibleClouds[i].position.x = visibleClouds[i].position.x + visibleClouds[i].speed;
-            if (visibleClouds[i].position.x > p5.width + strokeWeight/2) { 
-                visibleClouds[i].position.x = -1 * visibleClouds[i].boundingBox.width - strokeWeight/2 - visibleClouds[i].boundingBox.width*i;
-                visibleClouds[i].position.y = p5.random(0 + strokeWeight/2 + 25, p5.height - visibleClouds[i].boundingBox.height - strokeWeight/2 - 25);
-                visibleClouds[i].speed = p5.random(0.5, 2.5);
-                clouds.unshift(visibleClouds[i]);
-                visibleClouds.splice(i, 1);
-                i--;
-            }
-        }
-    }
 
-    function updateVisibleClouds() {
-        while (visibleClouds.length < 4) {
-            if (clouds.length != 0) {
-                visibleClouds.push(clouds.pop());
+            if (visibleClouds[i].position.x > p5.width + visibleClouds[i].strokeWeight/2) { 
+                visibleClouds[i].position.x = -1 * visibleClouds[i].boundingBox.width - visibleClouds[i].strokeWeight/2;
+                visibleClouds[i].position.y = p5.height / NUM_VISIBLE * visibleClouds[i].channel;
+                visibleClouds[i].speed = p5.random(0.5, 2.5);
+
+                clouds[visibleClouds[i].channel].unshift(visibleClouds[i]);
+                visibleClouds[i] = clouds[visibleClouds[i].channel].pop();
             }
         }
     }
@@ -95,37 +92,38 @@ export default function sketch(p5) {
         return p5.randomGaussian(0, jitter);
     }
 
-    function shuffle(array) {
-        let currentIndex = array.length,  randomIndex;
-      
-        // While there remain elements to shuffle.
-        while (currentIndex > 0) {
-      
-          // Pick a remaining element.
-          randomIndex = Math.floor(Math.random() * currentIndex);
-          currentIndex--;
-      
-          // And swap it with the current element.
-          [array[currentIndex], array[randomIndex]] = [
-            array[randomIndex], array[currentIndex]];
-        }
-      
-        return array;
-    }
-
     function updateWithProps(props) {
         if (props.clouds) {
-            clouds = props.clouds;
+            // clouds = props.clouds;
 
-            for (let i = 0; i < clouds.length; i++) {
-                let strokeWeight = getCloudDrawingStrokeWeight(clouds[i].age);
-                clouds[i].position = {
-                    x: -1 * clouds[i].boundingBox.width - strokeWeight/2 - clouds[i].boundingBox.width * i,
-                    y: p5.random(0 + strokeWeight/2 + 25, p5.height - clouds[i].boundingBox.height - strokeWeight/2 - 25)
-                };
-                clouds[i].speed = p5.random(0.5, 2.5);
+            for (let channel = 0; channel < NUM_VISIBLE; channel++) {
+                clouds[channel] = [];
             }
-            shuffle(clouds);
+
+            let channel = 0;
+            for (let i = 0; i < props.clouds.length; i++) {
+                let cloud = props.clouds[i];
+                cloud.channel = channel;
+                cloud.strokeWeight = p5.map(cloud.age, 0, MAX_AGE, 50, 75, true);
+                cloud.color = p5.color(255, 255, 255, 255 * p5.map(cloud.age, 0, MAX_AGE, 0.95, 0.50, true));
+                cloud.position = {
+                    x: -1 * cloud.boundingBox.width - cloud.strokeWeight/2,
+                    // y: p5.random(0 + strokeWeight/2 + 25, p5.height - clouds[i].boundingBox.height - strokeWeight/2 - 25)
+                    y: p5.random(p5.windowHeight / NUM_VISIBLE * channel, p5.windowHeight / NUM_VISIBLE * (channel+1))
+                };
+                cloud.position.y = p5.max(5+cloud.strokeWeight/2, p5.min(cloud.position.y, p5.windowHeight - 5 - cloud.boundingBox.height-cloud.strokeWeight/2));
+                cloud.speed = p5.random(0.5, 2.5);
+                clouds[channel].push(cloud);
+                channel = (channel == NUM_VISIBLE-1) ? 0 : channel + 1;
+            }
+            console.log(clouds);
+
+            visibleClouds = [];
+            for (let channel = 0; channel < NUM_VISIBLE; channel++) {
+                visibleClouds.push(clouds[channel].pop());
+            }
+            console.log(visibleClouds);
+
         }
     }
 

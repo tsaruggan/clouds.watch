@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { initializeApp } from 'firebase/app';
 import { ref, getDatabase } from 'firebase/database';
 import { useListVals } from 'react-firebase-hooks/database';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -38,7 +38,6 @@ export default function Home() {
       ssr: false,
     });
   });
-
 
   return (
     <>
