@@ -11,7 +11,7 @@ export default function sketch(p5) {
     function drawBorder() {
         p5.noFill();
         p5.stroke(255);
-        p5.strokeWeight(10);
+        p5.strokeWeight(4);
         p5.rect(0, 0, 640, 420, 8);
 
     }

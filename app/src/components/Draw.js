@@ -11,7 +11,7 @@ export default function Draw({ toggleDrawVisible }) {
         <div className={`${styles.draw}`}>
             <NextReactP5Wrapper fallback={<h1>loading draw...</h1>} sketch={sketch} />
             <div>
-                
+                <input type="text" name="name" className={`${styles.name}`}  maxLength={24} placeholder="name (optional)"/>
             </div>
             <div>
                 <button className={`${styles.button} & ${styles.back}`} onClick={toggleDrawVisible}>back</button>
