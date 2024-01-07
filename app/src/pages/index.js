@@ -36,7 +36,7 @@ var Draw = dynamic(() => import('../components/Draw'), {
 export default function Home() {
 
   const [clouds, loading, error] = useListVals(ref(database, 'clouds'));
-  const [drawVisible, setDrawVisible] = useState(false);
+  const [drawVisible, setDrawVisible] = useState(true);
 
   useEffect(() => {
     Sky = dynamic(() => import('../components/Sky'), {
@@ -52,7 +52,7 @@ export default function Home() {
 
   const display = () => {
     if (drawVisible) {
-      return <Draw />
+      return <Draw toggleDrawVisible={toggleDrawVisible} />
     } else {
       return <Sky clouds={clouds} toggleDrawVisible={toggleDrawVisible} />
     }

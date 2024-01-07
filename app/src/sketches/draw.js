@@ -1,14 +1,19 @@
 export default function sketch(p5) {
     function setup() {
-        p5.createCanvas(p5.windowWidth, p5.windowHeight);
-    }
-
-    function windowResized() {
-        p5.resizeCanvas(p5.windowWidth, p5.windowHeight);
+        p5.createCanvas(640, 420);
     }
 
     function draw() {
-        p5.background(255,0,0);
+        p5.background(50, 180, 250);
+        drawBorder();
+    }
+
+    function drawBorder() {
+        p5.noFill();
+        p5.stroke(255);
+        p5.strokeWeight(10);
+        p5.rect(0, 0, 640, 420, 8);
+
     }
 
     function updateWithProps(props) {
@@ -16,7 +21,6 @@ export default function sketch(p5) {
     }
 
     p5.setup = setup;
-    p5.windowResized = windowResized;
     p5.draw = draw;
     p5.updateWithProps = updateWithProps;
 }
