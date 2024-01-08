@@ -11,7 +11,7 @@ export default function Draw({ toggleDrawVisible, name, onNameInputChange }) {
     return (
         <>
             <div className={`${styles.draw}`}>
-                <NextReactP5Wrapper fallback={<h1>loading draw...</h1>} sketch={sketch} name={name}/>
+                <NextReactP5Wrapper fallback={<h1>loading draw...</h1>} sketch={sketch}/>
                 <div>
                     <input 
                         type="text" 
@@ -22,7 +22,7 @@ export default function Draw({ toggleDrawVisible, name, onNameInputChange }) {
                         autoComplete="off"
                         value={name} 
                         onChange={onNameInputChange}
-                        autoFocus
+                        // autoFocus
                     />
                 </div>
                 <div>
