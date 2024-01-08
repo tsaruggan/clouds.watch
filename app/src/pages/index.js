@@ -37,6 +37,7 @@ export default function Home() {
 
   const [clouds, loading, error] = useListVals(ref(database, 'clouds'));
   const [drawVisible, setDrawVisible] = useState(true);
+  const [name, setName] = useState(''); 
 
   useEffect(() => {
     Sky = dynamic(() => import('../components/Sky'), {
@@ -52,7 +53,7 @@ export default function Home() {
 
   const display = () => {
     if (drawVisible) {
-      return <Draw toggleDrawVisible={toggleDrawVisible} />
+      return <Draw toggleDrawVisible={toggleDrawVisible} name={name} onNameInputChange={onNameInputChange} />
     } else {
       return <Sky clouds={clouds} toggleDrawVisible={toggleDrawVisible} />
     }
@@ -60,6 +61,10 @@ export default function Home() {
 
   const toggleDrawVisible = () => {
     setDrawVisible(!drawVisible);
+  }
+
+  const onNameInputChange = (e) => {
+    setName(e.target.value);
   }
 
   return (
