@@ -1,9 +1,8 @@
 export default function sketch(p5) {
-    // let name = "";
-
     let drawing = [];
     let currentPath = [];
     let isDrawing = false;
+    let updateDrawing = undefined;
 
     function setup() {
         let canvas = p5.createCanvas(640, 420);
@@ -18,12 +17,12 @@ export default function sketch(p5) {
         if (isDrawing) {
             let point = {
                 x: p5.mouseX + p5.random(-20, 20),
-                y: p5.mouseY + p5.random(-20, 20)
+                y: p5.mouseY + p5.random(-10, 10)
             };
             currentPath.push(point);
         }
 
-        p5.stroke(255, 255, 255, 255*0.95);
+        p5.stroke(255, 255, 255, 255*0.9);
         p5.strokeWeight(50);
         p5.strokeJoin(p5.ROUND);
         p5.noFill();
@@ -32,7 +31,7 @@ export default function sketch(p5) {
             p5.beginShape();
             for (let j = 0; j < path.length; j++) {
                 path[j].x  =  path[j].x + p5.randomGaussian(0, 0.05);
-                path[j].y  =  path[j].y + p5.randomGaussian(0, 0.05);
+                path[j].y  =  path[j].y + p5.randomGaussian(0, 0.025);
                 p5.vertex(path[j].x, path[j].y);
             }
             p5.endShape();
@@ -48,21 +47,25 @@ export default function sketch(p5) {
     }
 
     function updateWithProps(props) {
-        // if (props.name) {
-        //     name = props.name;
-        //     console.log(name);
-        // }
+        if (props.drawing) {
+            drawing = props.drawing;
+        }
+
+        if (props.updateDrawing) {
+            updateDrawing = props.updateDrawing;
+        }
     }
 
     function startPath() {
         isDrawing = true;
         currentPath = [];
+
         drawing.push(currentPath);
     }
 
     function endPath() {
         isDrawing = false;
-        console.log(drawing);
+        updateDrawing(currentPath);
     }
 
     p5.setup = setup;
