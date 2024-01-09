@@ -4,7 +4,7 @@ import React from "react";
 
 import styles from '@/styles/Draw.module.css';
 
-export default function DrawInput({ toggleDrawVisible, name, onNameInputChange, clearDrawing }) {
+export default function DrawInput({ toggleDrawVisible, name, onNameInputChange, clearDrawing, submitDrawing }) {
     return (
         <>
             <div>
@@ -23,7 +23,7 @@ export default function DrawInput({ toggleDrawVisible, name, onNameInputChange, 
             <div>
                 <button className={`${styles.button} & ${styles.back}`} onClick={toggleDrawVisible}>back</button>
                 <button className={`${styles.button} & ${styles.clear}`} onClick={clearDrawing}>clear</button>
-                <button className={`${styles.button} & ${styles.submit}`}>submit</button>
+                <button className={`${styles.button} & ${styles.submit}`} onClick={submitDrawing}>submit</button>
             </div>
         </>
     ); 

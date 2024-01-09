@@ -5,9 +5,11 @@ import styles from '@/styles/Home.module.css';
 import dynamic from 'next/dynamic';
 
 import { initializeApp } from 'firebase/app';
-import { ref, getDatabase } from 'firebase/database';
+import { ref, getDatabase, push } from 'firebase/database';
 import { useListVals } from 'react-firebase-hooks/database';
 import { useEffect, useState } from 'react';
+
+import { cloneDeep } from "lodash";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -61,6 +63,7 @@ export default function Home() {
               drawing={drawing}
               updateDrawing={updateDrawing}
               clearDrawing={clearDrawing}
+              submitDrawing={submitDrawing}
             />
     } else {
       return <Sky 
@@ -88,6 +91,52 @@ export default function Home() {
 
   const clearDrawing = () => {
     setDrawing([]);
+  }
+
+  const submitDrawing = () => {
+    const [boundedDrawing, boundingBox] = boundDrawing(drawing);
+    const cloud = {
+      name: name,
+      drawing: boundedDrawing,
+      boundingBox: boundingBox
+    };
+    push(ref(database, 'clouds'), cloud);
+    clearDrawing();
+    toggleDrawVisible();
+  }
+
+  const boundDrawing = (drawing) => {
+    let minX = 640;
+    let minY = 420;
+    let maxX = 0;
+    let maxY = 0;
+    for (var i = 0; i < drawing.length; i++) {
+        let path = drawing[i];
+        for (var j = 0; j < path.length; j++) {
+            let point = path[j];
+            let x = point.x;
+            let y = point.y;
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+        }
+    }
+    let boxWidth = maxX - minX;
+    let boxHeight = maxY - minY;
+
+    let drawingCopy = cloneDeep(drawing);
+    for (var i = 0; i < drawingCopy.length; i++) {
+        var path = drawingCopy[i];
+        for (var j = 0; j < path.length; j++) {
+            let point = path[j];
+            let x = point.x;
+            let y = point.y;
+            path[j].x  =  x - minX;
+            path[j].y  =  y - minY;
+        }
+    }
+    return [drawingCopy, {width: boxWidth, height: boxHeight}];
   }
 
   return (

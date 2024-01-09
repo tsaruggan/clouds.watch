@@ -6,7 +6,7 @@ import styles from '@/styles/Draw.module.css';
 import DrawCanvas from "./DrawCanvas";
 import DrawInput from "./DrawInput";
 
-export default function Draw({ toggleDrawVisible, name, onNameInputChange, drawing, updateDrawing, clearDrawing }) {
+export default function Draw({ toggleDrawVisible, name, onNameInputChange, drawing, updateDrawing, clearDrawing, submitDrawing }) {
 
     return (
         <>
@@ -20,6 +20,7 @@ export default function Draw({ toggleDrawVisible, name, onNameInputChange, drawi
                     name={name} 
                     onNameInputChange={onNameInputChange} 
                     clearDrawing={clearDrawing}
+                    submitDrawing={submitDrawing}
                 />
             </div>
             
