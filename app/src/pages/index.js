@@ -98,11 +98,12 @@ export default function Home() {
     const cloud = {
       name: name,
       drawing: boundedDrawing,
-      boundingBox: boundingBox
+      boundingBox: boundingBox,
+      age: 0
     };
     push(ref(database, 'clouds'), cloud);
     clearDrawing();
-    toggleDrawVisible();
+    // toggleDrawVisible();
   }
 
   const boundDrawing = (drawing) => {

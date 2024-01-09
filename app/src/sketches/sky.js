@@ -15,8 +15,8 @@ export default function sketch(p5) {
 
     function draw() {
         p5.background(50,180,250);
-        // drawClouds();
-        // updateCloudPositions();
+        drawClouds();
+        updateCloudPositions();
         
     }
 
@@ -94,8 +94,6 @@ export default function sketch(p5) {
 
     function updateWithProps(props) {
         if (props.clouds) {
-            // clouds = props.clouds;
-
             for (let channel = 0; channel < NUM_VISIBLE; channel++) {
                 clouds[channel] = [];
             }
