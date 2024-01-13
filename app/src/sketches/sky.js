@@ -2,7 +2,7 @@ export default function sketch(p5) {
     var clouds = [];
     var visibleClouds = [];
 
-    const NUM_VISIBLE = 3;
+    const NUM_VISIBLE = 1;
     const MAX_AGE = 3;
 
     function setup() {
@@ -61,6 +61,20 @@ export default function sketch(p5) {
         p5.text(cloud.name,
                 cloud.boundingBox.width+cloud.strokeWeight/2 - p5.textWidth(cloud.name) - 5, 
                 cloud.boundingBox.height+cloud.strokeWeight/2 + 5);
+        p5.pop();
+        // drawBoundingBox(cloud)
+    }
+
+    function drawBoundingBox(cloud) {
+        p5.push();
+        p5.translate(cloud.position.x, cloud.position.y);
+        p5.noFill();
+        p5.stroke(255, 0, 0);
+        p5.strokeWeight(1);
+        p5.rect(0 - cloud.strokeWeight/2, 
+        0 - cloud.strokeWeight/2, 
+        cloud.boundingBox.width + cloud.strokeWeight, 
+        cloud.boundingBox.height + cloud.strokeWeight);
         p5.pop();
     }
 

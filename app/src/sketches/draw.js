@@ -1,3 +1,5 @@
+import { cloneDeep } from "lodash";
+
 export default function sketch(p5) {
     let drawing = [];
     let currentPath = [];
@@ -36,6 +38,7 @@ export default function sketch(p5) {
             }
             p5.endShape();
         }
+        drawBoundingBox();
     }
 
     function drawBorder() {
@@ -46,9 +49,41 @@ export default function sketch(p5) {
 
     }
 
+    function drawBoundingBox() {
+        if (drawing.length === 0) {
+            return;
+        }
+    
+        let minX = p5.width;
+        let minY = p5.height;
+        let maxX = 0;
+        let maxY = 0;
+    
+        for (let path of drawing) {
+            for (let point of path) {
+                let x = point.x;
+                let y = point.y;
+                minX = p5.min(minX, x);
+                minY = p5.min(minY, y);
+                maxX = p5.max(maxX, x);
+                maxY = p5.max(maxY, y);
+            }
+        }
+
+        p5.noFill();
+        p5.stroke(255, 0, 0);
+        p5.strokeWeight(1);
+        let boxWidth = maxX - minX;
+        let boxHeight = maxY - minY;
+        p5.rect(minX - 50/2, 
+            minY - 50/2, 
+            boxWidth + 50, 
+            boxHeight + 50);
+    }
+
     function updateWithProps(props) {
         if (props.drawing) {
-            drawing = props.drawing;
+            drawing = cloneDeep(props.drawing);
         }
 
         if (props.updateDrawing) {
@@ -65,6 +100,7 @@ export default function sketch(p5) {
 
     function endPath() {
         isDrawing = false;
+        console.log("current path", currentPath)
         updateDrawing(currentPath);
     }
 

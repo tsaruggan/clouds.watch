@@ -41,6 +41,7 @@ export default function Home() {
   const [drawVisible, setDrawVisible] = useState(true);
   const [name, setName] = useState('');
   const [drawing, setDrawing] = useState([]);
+  // const [boundingBox, setBoundingBox] = useState({width: 0, height: 0})
 
   useEffect(() => {
     Sky = dynamic(() => import('../components/Sky'), {
@@ -123,6 +124,7 @@ export default function Home() {
             maxY = Math.max(maxY, y);
         }
     }
+    
     let boxWidth = maxX - minX;
     let boxHeight = maxY - minY;
 
@@ -137,6 +139,7 @@ export default function Home() {
             path[j].y  =  y - minY;
         }
     }
+
     return [drawingCopy, {width: boxWidth, height: boxHeight}];
   }
 
