@@ -24,7 +24,7 @@ export default function sketch(p5) {
             currentPath.push(point);
         }
 
-        p5.stroke(255, 255, 255, 255*0.9);
+        p5.stroke(255, 255, 255, 255*0.95);
         p5.strokeWeight(50);
         p5.strokeJoin(p5.ROUND);
         p5.noFill();
@@ -38,7 +38,7 @@ export default function sketch(p5) {
             }
             p5.endShape();
         }
-        drawBoundingBox();
+        // drawBoundingBox();
     }
 
     function drawBorder() {

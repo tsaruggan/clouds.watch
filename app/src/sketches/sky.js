@@ -2,7 +2,7 @@ export default function sketch(p5) {
     var clouds = [];
     var visibleClouds = [];
 
-    const NUM_VISIBLE = 1;
+    const MAX_NUM_VISIBLE = 2;
     const MAX_AGE = 3;
 
     function setup() {
@@ -58,9 +58,12 @@ export default function sketch(p5) {
         p5.stroke(0);
         p5.strokeWeight(10);
         p5.textSize(14);
+        // p5.text(cloud.name,
+        //         cloud.boundingBox.width+cloud.strokeWeight/2 - p5.textWidth(cloud.name) - 5, 
+        //         cloud.boundingBox.height+cloud.strokeWeight/2 + 5);
         p5.text(cloud.name,
-                cloud.boundingBox.width+cloud.strokeWeight/2 - p5.textWidth(cloud.name) - 5, 
-                cloud.boundingBox.height+cloud.strokeWeight/2 + 5);
+                cloud.drawing.at(-1).at(-1).x,
+                cloud.drawing.at(-1).at(-1).y);
         p5.pop();
         // drawBoundingBox(cloud)
     }
@@ -81,14 +84,17 @@ export default function sketch(p5) {
     function updateCloudPositions() {
         for (let i = 0; i < visibleClouds.length; i++) {
             visibleClouds[i].position.x = visibleClouds[i].position.x + visibleClouds[i].speed;
-
             if (visibleClouds[i].position.x > p5.width + visibleClouds[i].strokeWeight/2) { 
+                let channel = visibleClouds[i].channel;
+                let numChannels = clouds.length;
                 visibleClouds[i].position.x = -1 * visibleClouds[i].boundingBox.width - visibleClouds[i].strokeWeight/2;
-                visibleClouds[i].position.y = p5.height / NUM_VISIBLE * visibleClouds[i].channel;
+                // visibleClouds[i].position.y = p5.height / clouds.length * visibleClouds[i].channel;
+                visibleClouds[i].position.y = p5.random(p5.height / numChannels * channel, p5.height / numChannels * (channel+1))
+                visibleClouds[i].position.y = p5.max(10+visibleClouds[i].strokeWeight/2, p5.min(visibleClouds[i].position.y, p5.height - 10 - visibleClouds[i].boundingBox.height-visibleClouds[i].strokeWeight/2));
                 visibleClouds[i].speed = p5.random(0.5, 2.5);
 
-                clouds[visibleClouds[i].channel].unshift(visibleClouds[i]);
-                visibleClouds[i] = clouds[visibleClouds[i].channel].pop();
+                clouds[channel].unshift(visibleClouds[i]);
+                visibleClouds[i] = clouds[channel].pop();
             }
         }
     }
@@ -108,7 +114,8 @@ export default function sketch(p5) {
 
     function updateWithProps(props) {
         if (props.clouds) {
-            for (let channel = 0; channel < NUM_VISIBLE; channel++) {
+            let numChannels = p5.min(props.clouds.length, MAX_NUM_VISIBLE);
+            for (let channel = 0; channel < numChannels; channel++) {
                 clouds[channel] = [];
             }
 
@@ -121,17 +128,17 @@ export default function sketch(p5) {
                 cloud.position = {
                     x: -1 * cloud.boundingBox.width - cloud.strokeWeight/2,
                     // y: p5.random(0 + strokeWeight/2 + 25, p5.height - clouds[i].boundingBox.height - strokeWeight/2 - 25)
-                    y: p5.random(p5.windowHeight / NUM_VISIBLE * channel, p5.windowHeight / NUM_VISIBLE * (channel+1))
+                    y: p5.random(p5.height / numChannels * channel, p5.height / numChannels * (channel+1))
                 };
-                cloud.position.y = p5.max(5+cloud.strokeWeight/2, p5.min(cloud.position.y, p5.windowHeight - 5 - cloud.boundingBox.height-cloud.strokeWeight/2));
+                cloud.position.y = p5.max(10+cloud.strokeWeight/2, p5.min(cloud.position.y, p5.height - 10 - cloud.boundingBox.height-cloud.strokeWeight/2));
                 cloud.speed = p5.random(0.5, 2.5);
                 clouds[channel].push(cloud);
-                channel = (channel == NUM_VISIBLE-1) ? 0 : channel + 1;
+                channel = (channel == numChannels-1) ? 0 : channel + 1;
             }
             console.log(clouds);
 
             visibleClouds = [];
-            for (let channel = 0; channel < NUM_VISIBLE; channel++) {
+            for (let channel = 0; channel < numChannels; channel++) {
                 visibleClouds.push(clouds[channel].pop());
             }
             console.log(visibleClouds);

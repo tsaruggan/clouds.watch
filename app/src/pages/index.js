@@ -38,10 +38,9 @@ var Draw = dynamic(() => import('../components/Draw'), {
 export default function Home() {
 
   const [clouds, loading, error] = useListVals(ref(database, 'clouds'));
-  const [drawVisible, setDrawVisible] = useState(true);
+  const [drawVisible, setDrawVisible] = useState(false);
   const [name, setName] = useState('');
   const [drawing, setDrawing] = useState([]);
-  // const [boundingBox, setBoundingBox] = useState({width: 0, height: 0})
 
   useEffect(() => {
     Sky = dynamic(() => import('../components/Sky'), {
@@ -92,6 +91,7 @@ export default function Home() {
 
   const clearDrawing = () => {
     setDrawing([]);
+    setName("");
   }
 
   const submitDrawing = () => {
