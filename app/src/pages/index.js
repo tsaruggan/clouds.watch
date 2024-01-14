@@ -100,7 +100,7 @@ export default function Home() {
       name: name,
       drawing: boundedDrawing,
       boundingBox: boundingBox,
-      age: 0
+      timestamp: Date.now()
     };
     push(ref(database, 'clouds'), cloud);
     clearDrawing();

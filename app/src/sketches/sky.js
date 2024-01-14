@@ -92,6 +92,15 @@ export default function sketch(p5) {
         return p5.map(age, 0, 3, 50, 75, true);
     }
 
+    function getAge(timestamp) {
+        const maxTimestamp = Date.now();
+        const minTimestamp = maxTimestamp - 86400000 * MAX_AGE;
+        const age = MAX_AGE - p5.map(timestamp, minTimestamp, maxTimestamp, 0, MAX_AGE, true);
+        console.log(timestamp, minTimestamp, maxTimestamp)
+        console.log(age);
+        return age;
+    }
+
     function getJitter(age) {
         let jitter = p5.map(age, 0, 3, 0.05, 0.5, true);
         return p5.randomGaussian(0, jitter);
@@ -108,6 +117,7 @@ export default function sketch(p5) {
             for (let i = 0; i < props.clouds.length; i++) {
                 let cloud = props.clouds[i];
                 cloud.channel = channel;
+                cloud.age = getAge(cloud.timestamp);
                 cloud.strokeWeight = p5.map(cloud.age, 0, MAX_AGE, 50, 75, true);
                 cloud.color = p5.color(255, 255, 255, 255 * p5.map(cloud.age, 0, MAX_AGE, 0.95, 0.50, true));
                 cloud.position = generateRandomInitialPosition(cloud, numChannels);
@@ -138,4 +148,3 @@ export default function sketch(p5) {
     p5.draw = draw;
     p5.updateWithProps = updateWithProps;
 }
- 
