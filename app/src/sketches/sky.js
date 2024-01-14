@@ -17,7 +17,6 @@ export default function sketch(p5) {
         p5.background(50,180,250);
         drawClouds();
         updateCloudPositions();
-        
     }
 
     function drawClouds() {
@@ -50,8 +49,11 @@ export default function sketch(p5) {
             p5.endShape();
             p5.pop()
         }
-        
 
+       drawText(cloud)
+    }
+
+    function drawText(cloud) {
         p5.push();
         p5.translate(cloud.position.x, cloud.position.y);
         p5.fill(255);
@@ -65,34 +67,17 @@ export default function sketch(p5) {
                 cloud.drawing.at(-1).at(-1).x,
                 cloud.drawing.at(-1).at(-1).y);
         p5.pop();
-        // drawBoundingBox(cloud)
-    }
-
-    function drawBoundingBox(cloud) {
-        p5.push();
-        p5.translate(cloud.position.x, cloud.position.y);
-        p5.noFill();
-        p5.stroke(255, 0, 0);
-        p5.strokeWeight(1);
-        p5.rect(0 - cloud.strokeWeight/2, 
-        0 - cloud.strokeWeight/2, 
-        cloud.boundingBox.width + cloud.strokeWeight, 
-        cloud.boundingBox.height + cloud.strokeWeight);
-        p5.pop();
     }
 
     function updateCloudPositions() {
         for (let i = 0; i < visibleClouds.length; i++) {
             visibleClouds[i].position.x = visibleClouds[i].position.x + visibleClouds[i].speed;
             if (visibleClouds[i].position.x > p5.width + visibleClouds[i].strokeWeight/2) { 
-                let channel = visibleClouds[i].channel;
                 let numChannels = clouds.length;
-                visibleClouds[i].position.x = -1 * visibleClouds[i].boundingBox.width - visibleClouds[i].strokeWeight/2;
-                // visibleClouds[i].position.y = p5.height / clouds.length * visibleClouds[i].channel;
-                visibleClouds[i].position.y = p5.random(p5.height / numChannels * channel, p5.height / numChannels * (channel+1))
-                visibleClouds[i].position.y = p5.max(10+visibleClouds[i].strokeWeight/2, p5.min(visibleClouds[i].position.y, p5.height - 10 - visibleClouds[i].boundingBox.height-visibleClouds[i].strokeWeight/2));
+                visibleClouds[i].position = generateRandomInitialPosition(visibleClouds[i], numChannels);
                 visibleClouds[i].speed = p5.random(0.5, 2.5);
 
+                let channel = visibleClouds[i].channel;
                 clouds[channel].unshift(visibleClouds[i]);
                 visibleClouds[i] = clouds[channel].pop();
             }
@@ -125,12 +110,7 @@ export default function sketch(p5) {
                 cloud.channel = channel;
                 cloud.strokeWeight = p5.map(cloud.age, 0, MAX_AGE, 50, 75, true);
                 cloud.color = p5.color(255, 255, 255, 255 * p5.map(cloud.age, 0, MAX_AGE, 0.95, 0.50, true));
-                cloud.position = {
-                    x: -1 * cloud.boundingBox.width - cloud.strokeWeight/2,
-                    // y: p5.random(0 + strokeWeight/2 + 25, p5.height - clouds[i].boundingBox.height - strokeWeight/2 - 25)
-                    y: p5.random(p5.height / numChannels * channel, p5.height / numChannels * (channel+1))
-                };
-                cloud.position.y = p5.max(10+cloud.strokeWeight/2, p5.min(cloud.position.y, p5.height - 10 - cloud.boundingBox.height-cloud.strokeWeight/2));
+                cloud.position = generateRandomInitialPosition(cloud, numChannels);
                 cloud.speed = p5.random(0.5, 2.5);
                 clouds[channel].push(cloud);
                 channel = (channel == numChannels-1) ? 0 : channel + 1;
@@ -144,6 +124,13 @@ export default function sketch(p5) {
             console.log(visibleClouds);
 
         }
+    }
+
+    function generateRandomInitialPosition(cloud, numChannels) {
+        let x = -1 * cloud.boundingBox.width * (cloud.channel+1) - cloud.strokeWeight/2;
+        let y = p5.random(p5.height / numChannels * cloud.channel, p5.height / numChannels * (cloud.channel+1));
+        y = p5.max(10 + cloud.strokeWeight/2, p5.min(y, p5.height - 10 - cloud.boundingBox.height-cloud.strokeWeight/2));
+        return {x: x, y: y};
     }
 
     p5.setup = setup;
