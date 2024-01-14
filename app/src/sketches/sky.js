@@ -96,8 +96,6 @@ export default function sketch(p5) {
         const maxTimestamp = Date.now();
         const minTimestamp = maxTimestamp - 86400000 * MAX_AGE;
         const age = MAX_AGE - p5.map(timestamp, minTimestamp, maxTimestamp, 0, MAX_AGE, true);
-        console.log(timestamp, minTimestamp, maxTimestamp)
-        console.log(age);
         return age;
     }
 
@@ -108,14 +106,15 @@ export default function sketch(p5) {
 
     function updateWithProps(props) {
         if (props.clouds) {
-            let numChannels = p5.min(props.clouds.length, MAX_NUM_VISIBLE);
+            let shuffledClouds = shuffle(props.clouds);
+            let numChannels = p5.min(shuffledClouds.length, MAX_NUM_VISIBLE);
             for (let channel = 0; channel < numChannels; channel++) {
                 clouds[channel] = [];
             }
 
             let channel = 0;
-            for (let i = 0; i < props.clouds.length; i++) {
-                let cloud = props.clouds[i];
+            for (let i = 0; i < shuffledClouds.length; i++) {
+                let cloud = shuffledClouds[i];
                 cloud.channel = channel;
                 cloud.age = getAge(cloud.timestamp);
                 cloud.strokeWeight = p5.map(cloud.age, 0, MAX_AGE, 50, 75, true);
@@ -125,14 +124,11 @@ export default function sketch(p5) {
                 clouds[channel].push(cloud);
                 channel = (channel == numChannels-1) ? 0 : channel + 1;
             }
-            console.log(clouds);
 
             visibleClouds = [];
             for (let channel = 0; channel < numChannels; channel++) {
                 visibleClouds.push(clouds[channel].pop());
             }
-            console.log(visibleClouds);
-
         }
     }
 
@@ -142,6 +138,24 @@ export default function sketch(p5) {
         y = p5.max(10 + cloud.strokeWeight/2, p5.min(y, p5.height - 10 - cloud.boundingBox.height-cloud.strokeWeight/2));
         return {x: x, y: y};
     }
+
+    function shuffle(array) {
+        let currentIndex = array.length,  randomIndex;
+      
+        // While there remain elements to shuffle.
+        while (currentIndex > 0) {
+      
+          // Pick a remaining element.
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex--;
+      
+          // And swap it with the current element.
+          [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+        }
+      
+        return array;
+      }
 
     p5.setup = setup;
     p5.windowResized = windowResized;

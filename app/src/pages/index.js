@@ -11,6 +11,9 @@ import { useEffect, useState } from 'react';
 
 import { cloneDeep } from "lodash";
 
+import { getAuth, signInAnonymously } from "firebase/auth";
+import { useAuthState } from 'react-firebase-hooks/auth';
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: "clouds-watch.firebaseapp.com",
@@ -34,6 +37,7 @@ var Draw = dynamic(() => import('../components/Draw'), {
   ssr: false,
 });
 
+const auth = getAuth();
 
 export default function Home() {
 
@@ -41,6 +45,7 @@ export default function Home() {
   const [drawVisible, setDrawVisible] = useState(false);
   const [name, setName] = useState('');
   const [drawing, setDrawing] = useState([]);
+  const [user, userLoading, userError] = useAuthState(auth);
 
   useEffect(() => {
     Sky = dynamic(() => import('../components/Sky'), {
@@ -51,6 +56,15 @@ export default function Home() {
     Draw = dynamic(() => import('../components/Draw'), {
       loading: () => <p>loading draw...</p>,
       ssr: false,
+    });
+
+
+    signInAnonymously(auth)
+    .then(() => {
+      console.log("signed in.")
+    })
+    .catch((err) => {
+      console.log(err);
     });
   });
 
@@ -95,6 +109,9 @@ export default function Home() {
   }
 
   const submitDrawing = () => {
+    if (drawing.length == 0) {
+      return;
+    }
     const [boundedDrawing, boundingBox] = boundDrawing(drawing);
     const cloud = {
       name: name,
@@ -104,7 +121,7 @@ export default function Home() {
     };
     push(ref(database, 'clouds'), cloud);
     clearDrawing();
-    // toggleDrawVisible();
+    toggleDrawVisible();
   }
 
   const boundDrawing = (drawing) => {
@@ -151,9 +168,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {error && <strong>error: {error}</strong>}
-      {loading && <strong>loading...</strong>}
-      {!loading && clouds && (
+      {!loading && user && clouds && (
         display()
       )}
     </>
